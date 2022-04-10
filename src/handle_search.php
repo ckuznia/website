@@ -54,8 +54,8 @@ if($city == "") {
     $isValid = false;
 }
 // Ensure optional fields have valid values
-if($zipCode != "" && (!is_numeric($zipCode) || strlen($zipCode) != 6 || $zipCode < 0)) {
-    $_SESSION['error_message'][] = "Zip-code must be a 6-digit number.";
+if($zipCode != "" && (!is_numeric($zipCode) || strlen($zipCode) != 5 || $zipCode < 0)) {
+    $_SESSION['error_message'][] = "Zip-code must be a 5-digit number.";
     $isValid = false;
 }
 if($resultCount != "" && (!is_numeric($resultCount) || $resultCount <= 0)) {
@@ -197,7 +197,7 @@ if($isValid) {
     	$logger->LogError("cURL Error #:" . $err);
     }
     
-    if(sizeof($data['data']['home_search']['results']) > 0) {
+    if($data['data']['home_search']['results'] != null && sizeof($data['data']['home_search']['results']) > 0) {
         // Pass on result set
         $_SESSION['search-results'] = $data['data']['home_search']['results'];
         

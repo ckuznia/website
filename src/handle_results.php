@@ -13,7 +13,7 @@ require_once 'config/api-config.php';
 require_once 'logger.php';
 
 $logger = new KLogger("log.txt", KLogger::DEBUG);
-$logger->LogDebug("Result selected with property id: ".$_POST['property-id']);
+$logger->LogDebug("Result selected with property id ".$_POST['property-id']);
 
 // Do another API call to get more detailed information on this listing
 $curl = curl_init();
@@ -50,8 +50,8 @@ $_SESSION['listing'] = $data['data']['property_detail'];
 // Save data (from 1st API call) for listing with that property ID
 foreach($_SESSION['search-results'] as $result) {
     if(trim($result['property_id']) == trim($_POST['property-id'])) {
-        $logger->LogDebug("found result: ".trim($result['property_id']));
         $_SESSION['search-result'] = $result;
+        $logger->LogDebug("clicked result with property id ".$result['property_id']." has name ".$result['description']['name']);
         break;
     }
 }

@@ -21,7 +21,6 @@ class Dao {
     }
 
     public function getConnection () {
-        $this->logger->LogDebug("Establishing database connection...");
         try {
             return new PDO("mysql:host={$this->host};dbname={$this->databaseName}", $this->user, $this->pass);
         } catch (Exception $e) {
@@ -31,6 +30,7 @@ class Dao {
     }
   
     public function addUser($firstName, $lastName, $username, $password) {
+        $this->logger->LogDebug("addUser() called with username ".$username);
         $conn = $this->getConnection();
         $saveQuery =
             "INSERT INTO user
@@ -51,9 +51,10 @@ class Dao {
     }
     
     public function getUserInfo($username) {
+        $this->logger->LogDebug("getUserInfo() called with username ".$username);
         $conn = $this->getConnection();
         $query = "
-            SELECT first_name, last_name 
+            SELECT first_name, last_name, account_creation_date
             FROM user 
             WHERE username = :username";
         $stmt = $conn->prepare($query);
@@ -70,6 +71,7 @@ class Dao {
     }
     
     public function verifyAccount($username, $password) {
+        $this->logger->LogDebug("verifyAccount() called with username ".$username." and password ".$password);
         $conn = $this->getConnection();
         $query = "
             SELECT username, password 
@@ -79,7 +81,9 @@ class Dao {
     
     public function saveListing($username, $propertyID, $zipCode, $city, $state, $address, $name,
         $listPrice, $size, $beds, $baths, $assignedParking, $yearBuilt, $neighborhood, $propertyType,
-        $cats, $dogs, $nearbySchools, $contactNumber, $leaseTerms, $description, $photos) {
+        $cats, $dogs, $nearbySchools, $contactNumber, $leaseTerms, $description, $photos, $main_photo) {
+            
+        $this->logger->LogDebug("saveListing() called with username ".$username." and property id ".$propertyID);
         
         // Save listing as a row in the listing table
         $conn = $this->getConnection();
@@ -87,13 +91,13 @@ class Dao {
             "INSERT INTO listing
             (property_id, username, zip_code, city, state, address, name, list_price, size,
             beds, baths, assigned_parking, year_built, neighborhood, property_type, cats_allowed,
-            dogs_allowed, nearby_schools, contact_number, lease_terms, description)
+            dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo)
             VALUES
             (:property_id, :username, :zip_code, :city, :state, :address, :name, :list_price, :size,
             :beds, :baths, :assigned_parking, :year_built, :neighborhood, :property_type, :cats_allowed,
-            :dogs_allowed, :nearby_schools, :contact_number, :lease_terms, :description)";
+            :dogs_allowed, :nearby_schools, :contact_number, :lease_terms, :description, :main_photo)";
         $stmt = $conn->prepare($saveQuery);
-        $stmt->bindParam(":property_id", $propertyID);
+        $stmt->bindParam(":property_id", trim($propertyID));
         $stmt->bindParam(":username", $username);
         $stmt->bindParam(":zip_code", $zipCode);
         $stmt->bindParam(":city", $city);
@@ -114,8 +118,9 @@ class Dao {
         $stmt->bindParam(":contact_number", $contactNumber);
         $stmt->bindParam(":lease_terms", $leaseTerms);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":main_photo", $main_photo);
         if(!$stmt->execute()) {
-            $this->logger->LogFatal("Failed to add listing with property_id=$propertyID");
+            $this->logger->LogFatal("Failed to add listing with property_id $propertyID");
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
         }
         
@@ -123,11 +128,12 @@ class Dao {
         foreach($photos as $photo) {
             $query =
                 "INSERT INTO listing_photo
-                (property_id, house_photo_path)
+                (username, property_id, house_photo_path)
                 VALUES
-                (:property_id, :house_photo_path)";
+                (:username, :property_id, :house_photo_path)";
             $stmt = $conn->prepare($query);
-            $stmt->bindParam(":property_id", $propertyID);
+            $stmt->bindParam(":username", $username);
+            $stmt->bindParam(":property_id", trim($propertyID));
             $stmt->bindParam(":house_photo_path", $photo['href']);
             if(!$stmt->execute()) {
                 $this->logger->LogFatal("Failed to add photo to listing_photo table");
@@ -137,21 +143,89 @@ class Dao {
         
     }
     
+    public function deleteListing($username, $propertyID) {
+        $this->logger->LogDebug("deleteListing() called with username ".$username." and property id ".$propertyID);
+        $conn = $this->getConnection();
+        $query = "
+            DELETE FROM listing
+            WHERE property_id = :property_id AND username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":property_id", trim($propertyID));
+        $stmt->bindParam(":username", $username);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed remove listing with id ".$propertyID);
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+        
+        // Delete listing photos as well
+        $query = "
+            DELETE FROM listing_photo
+            WHERE property_id = :property_id AND username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":property_id", trim($propertyID));
+        $stmt->bindParam(":username", $username);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed to remove listing photos with id ".$propertyID);
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+    }
+    
+    public function getSavedListings($username) {
+        $this->logger->LogDebug("getSavedListings() called with username ".$username);
+        $conn = $this->getConnection();
+        $query = "
+            SELECT property_id, zip_code, city, state, address, name, list_price, size,
+                beds, baths, assigned_parking, year_built, neighborhood, property_type, cats_allowed,
+                dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo
+            FROM listing 
+            WHERE username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindValue(":username", $username, PDO::PARAM_INT);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed to get listings for user $username");
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+        $rows = $stmt->fetchAll();
+        if($rows == null || $rows == "") {
+            return null;
+        }
+        return $rows;
+    }
+    
+    public function getPhotos() {
+        $this->logger->LogDebug("getPhotos() called");
+        $conn = $this->getConnection();
+        $query = "
+            SELECT property_id, house_photo_path
+            FROM listing_photo";
+        $stmt = $conn->prepare($query);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed to get photos");
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+        $rows = $stmt->fetchAll();
+        if($rows == null || $rows == "") {
+            return null;
+        }
+        return $rows;
+    }
+    
     public function isSavedListing($propertyID) {
+        $this->logger->LogDebug("isSavedListing() called with property id ".$propertyID);
         $conn = $this->getConnection();
         $query = "
             SELECT property_id 
             FROM listing 
             WHERE property_id = :property_id";
         $stmt = $conn->prepare($query);
-        $stmt->bindValue(":property_id", $propertyID, PDO::PARAM_INT);
+        $stmt->bindValue(":property_id", trim($propertyID), PDO::PARAM_INT);
         if(!$stmt->execute()) {
             $this->logger->LogFatal("Failed to check if property_id $propertyID is saved");
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
         }
         $row = $stmt->fetchAll();
         if($row == null || $row == "") {
-            return null;
+            return false;
         }
         return true;
     }

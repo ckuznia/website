@@ -116,14 +116,16 @@ $listing = $_SESSION['listing']; // Result from 2nd API call
         <?php
         // Check if listing has been saved to the profile
         $isSavedListing = $dao->isSavedListing($searchResult['property_id']);
-        $logger->LogDebug("is saved listing:".$isSavedListing);
+        $logger->LogDebug("is saved listing=".$isSavedListing);
         $buttonText = "Save listing";
+        $value="save";
         if($isSavedListing) {
             $buttonText = "Remove from saved listings";
+            $value="delete";
         }
         ?>
-        <form id="saved-listing-form" action="handle_save.php" method="post">
-            <button type="submit" form="saved-listing-form"><?php echo $buttonText ?></button>
+        <form id="saved-listing-form" action="handle_listing.php" method="post">
+            <button type="submit" name="button" value="<?php echo $value ?>" form="saved-listing-form"><?php echo $buttonText ?></button>
         </form>
     </div>
 </div>

@@ -21,12 +21,11 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
     <?php
     
     $results = $_SESSION['search-results']; // all search results
-    $index = 0;
     foreach($results as $result) {
         echo "<form id=\"result-form".$result['property_id']."\" method=\"post\" action=\"handle_results.php\">";
             echo "<button class=\"result-button\" type=\"submit\">";
                 echo "<div class=\"result-container\">";
-                    echo "<img class=\"result-image\" src=\"".$result['photos'][0]['href'].">\"";
+                    echo "<img class=\"result-image\" src=\"".$result['photos'][0]['href']."\">";
                     echo "<div class=\"result-right-pane\">".$result['description']['name']."\n</div>";
                 echo "</div>";
             echo "</button>";

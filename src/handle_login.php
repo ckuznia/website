@@ -30,7 +30,7 @@ $authenticated = false;
 foreach($result as $row) {
     if($row['username'] == $username && $row['password'] == $password) {
         $authenticated = true;
-        $logger->LogDebug("User '$username' authenticated");
+        $logger->LogDebug("User $username authenticated");
         break;
     }
 }
@@ -49,8 +49,7 @@ if($isValid) {
     
     // Get user data for the session
     $_SESSION['user-info'] = $dao->getUserInfo($username);
-    $logger->LogDebug(print_r($_SESSION['user-info'], true));
-    
+
     // Redirect to home page
     header('Location: home.php');
     exit;
