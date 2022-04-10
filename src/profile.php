@@ -18,7 +18,6 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
 $dao = new Dao();
 
 $userInfo = $dao->getUserInfo($_SESSION['username']);
-$logger->LogDebug(print_r($userInfo, true));
 $firstName = $userInfo[0]['first_name'];
 $lastName = $userInfo[0]['last_name'];
 $creationDate = $userInfo[0]['account_creation_date'];
@@ -36,6 +35,10 @@ else $creationTime .= " am";
     <div class='text-large-white'>First name: <?php echo $firstName ?></div>
     <div class='text-large-white'>Last name: <?php echo $lastName ?></div>
     <div class='text-large-white'>Account created: <?php echo $creationDate." at ".$creationTime ?></div>
+    
+    <form id="delete-user-form" action="handle_profile.php">
+        <div><button id="delete-user-button" class="submit-button" type="submit" form="delete-user-form">DELETE <?php echo $_SESSION['username']."'s account" ?></button></div>
+    </form>
 </div>
 
 

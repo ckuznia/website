@@ -50,6 +50,43 @@ class Dao {
         return true;
     }
     
+    public function deleteUser($username) {
+        $this->logger->LogDebug("deleteUser() called with username ".$username);
+        $conn = $this->getConnection();
+        // Delete listing photos
+        $query = "
+            DELETE FROM listing_photo
+            WHERE username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":username", $username);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed to remove listing photos with for user ".$username);
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+        
+        // Delete listings
+        $query = "
+            DELETE FROM listing
+            WHERE username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":username", $username);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed remove listings for user ".$username);
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+        
+        // Delete account
+        $query = "
+            DELETE FROM user
+            WHERE username = :username";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":username", $username);
+        if(!$stmt->execute()) {
+            $this->logger->LogFatal("Failed remove user ".$username);
+            $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
+        }
+    }
+    
     public function getUserInfo($username) {
         $this->logger->LogDebug("getUserInfo() called with username ".$username);
         $conn = $this->getConnection();
