@@ -75,7 +75,7 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
         <div class="text-medium-white">Max size</div>
         <input id="max-size" name="max-size" class="text-input" type="text" value="<?php echo $_SESSION['post']['max-size'] ?>">
         
-        <div id="features" class="text-medium-white">Features</div>
+        <div id="features" class="text-medium-large-white">Features</div>
         <input id="central-air" name="central-air" type="checkbox" <?php if($_SESSION['post']['central-air'] == "on") echo "checked"?>>
         <label for="central-air" class="text-medium-white">Central air</label>
         <input id="dishwasher" name="dishwasher" type="checkbox" <?php if($_SESSION['post']['dishwasher'] == "on") echo "checked"?>>
@@ -85,7 +85,7 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
         <input id="furnished" name="furnished" type="checkbox" <?php if($_SESSION['post']['furnished'] == "on") echo "checked"?>>
         <label for="furnished" class="text-medium-white">Furnished</label>
        
-        <div id="ammenities" class="text-medium-white">Community ammenities</div>
+        <div id="ammenities" class="text-medium-large-white">Community ammenities</div>
         <input id="garage" name="garage" type="checkbox" <?php if($_SESSION['post']['garage'] == "on") echo "checked"?>>
         <label for="garage" class="text-medium-white">Garage</label>
         <input id="pool" name="pool" type="checkbox" <?php if($_SESSION['post']['pool'] == "on") echo "checked"?>>
@@ -97,7 +97,7 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
         <input id="gym" name="gym" type="checkbox" <?php if($_SESSION['post']['gym'] == "on") echo "checked"?>>
         <label for="gym" class="text-medium-white">Gym</label>
         
-        <div id="pets" class="text-medium-white">Pets:</div>
+        <div id="pets" class="text-medium-large-white">Pets</div>
         <input id="cats" name="cats" type="checkbox" value="true" <?php if($_SESSION['post']['cats'] == "true") echo "checked"?>>
         <label for="cats" class="text-medium-white">Must allow cats</label>
         <input id="dogs" name="dogs" type="checkbox" value="true" <?php if($_SESSION['post']['dogs'] == "true") echo "checked"?>>

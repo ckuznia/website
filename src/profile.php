@@ -18,9 +18,9 @@ $logger = new KLogger("log.txt", KLogger::DEBUG);
 $dao = new Dao();
 
 $userInfo = $dao->getUserInfo($_SESSION['username']);
-$firstName = $userInfo[0]['first_name'];
-$lastName = $userInfo[0]['last_name'];
-$creationDate = $userInfo[0]['account_creation_date'];
+$firstName = $userInfo['first_name'];
+$lastName = $userInfo['last_name'];
+$creationDate = $userInfo['account_creation_date'];
 $creationTime = substr($creationDate, 11);
 $creationDate = substr($creationDate, 0, 10);
 $hour = substr($creationTime, 0, 2);
@@ -31,10 +31,10 @@ if($hour >= 13) {
 else $creationTime .= " am"; 
 ?>
 <div class="page-content">
-    <div id="home-name" class="text-large-white"><?php echo $_SESSION['username']."'s Profile Info"?></div>
-    <div class='text-large-white'>First name: <?php echo $firstName ?></div>
-    <div class='text-large-white'>Last name: <?php echo $lastName ?></div>
-    <div class='text-large-white'>Account created: <?php echo $creationDate." at ".$creationTime ?></div>
+    <div id="home-name" class="text-large-white"><?php echo $_SESSION['username']."'s profile info"?></div>
+    <div class='text-medium-large-white'>First name: <?php echo $firstName ?></div>
+    <div class='text-medium-large-white'>Last name: <?php echo $lastName ?></div>
+    <div class='text-medium-large-white'>Account created: <?php echo $creationDate." at ".$creationTime ?></div>
     
     <form id="delete-user-form" action="handle_profile.php">
         <div><button id="delete-user-button" class="submit-button" type="submit" form="delete-user-form">DELETE <?php echo $_SESSION['username']."'s account" ?></button></div>

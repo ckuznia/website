@@ -13,12 +13,12 @@ $password = get_password($raw_password);
 
 // Validate fields
 $isValid = true;
-if($raw_username == "") {
-    $_SESSION['error_message'][] = "Username field must not be blank.";
+if(trim($raw_username) == "") {
+    $_SESSION['error_message'][] = "Username must not be blank.";
     $isValid = false;
 }
-if($raw_password == "") {
-    $_SESSION['error_message'][] = "Password field must not be blank.";
+if(trim($raw_password) == "") {
+    $_SESSION['error_message'][] = "Password must not be blank.";
     $isValid = false;
 }
 
@@ -35,7 +35,7 @@ foreach($result as $row) {
     }
 }
 
-if(!$authenticated && $raw_username != "" && $raw_password != "") {
+if(!$authenticated && trim($raw_username) != "" && trim($raw_password) != "") {
     $_SESSION['error_message'][] = "Invalid username or password.";
     $isValid = false;
 }

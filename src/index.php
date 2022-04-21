@@ -35,10 +35,7 @@ require_once 'header.php';
     <div id="no-account-panel">
         <div>
         <form id="create-account" action="create_account.php" method="get">
-            <button id="login-create-account-button" type="submit" form="create-account">Create account</button>
-        </form>
-        <form id="guest-login" action="home.php">
-            <button id="guest-login-button" type="submit" form="guest-login">Login as guest</button>
+            <div><button class="submit-button" type="submit" form="create-account">Create account</button></div>
         </form>
         </div>
     </div>

@@ -19,7 +19,6 @@ $logger->LogDebug("handle_listing.php called");
 $searchResult = $_SESSION['search-result']; // A single result from 1st API call's results
 $listing = $_SESSION['listing']; // Result from 2nd API call
 
-
 // Check whether saving or deleting listing
 if($_POST['button'] == "save") {
     $dao->saveListing(
@@ -45,15 +44,49 @@ if($_POST['button'] == "save") {
         $listing['lease_terms'],
         $listing['description'],
         $listing['photos'],
-        $searchResult['photos'][0]['href']
+        $searchResult['photos'][0]['href'],
+        $searchResult['href']
     );
 }
 else {
-    $dao->deleteListing(get_input($_SESSION['username']), $searchResult['property_id']);
+    
+    
+    /*
+    // Remove listing from session storage
+    $newResultList;
+    $index = 0;
+    foreach($_SESSION['saved-listings'] as $result) {
+        // Add all the results except for the one that was deleted
+        if($result['property_id'] != $searchResult['property_id']) {
+            $newResultList[$index] = $result;
+            $index++;
+        }
+    }
+    */
+    // Update session storage
+    //$_SESSION['saved-listings'] = $newResultList;
+    
+    if($_POST['tab'] == "home") {
+        // Redirect back to saved home page (since listing is now deleted from home)
+        $dao->deleteListing(get_input($_SESSION['username']), $_SESSION['saved-listing']['property_id']);
+        header('Location: home.php');
+        exit;
+    }
+    else {
+        $dao->deleteListing(get_input($_SESSION['username']), $searchResult['property_id']);
+    }
 }
 
-// Redirect back to listing page
-header('Location: listing.php');
-exit;
+if($_POST['tab'] == "home") {
+    // Redirect back to saved listing page
+    header('Location: saved_listing.php');
+    exit;
+}
+else if($_POST['tab'] == "search") {
+    // Redirect back to listing page
+    header('Location: listing.php');
+    exit;
+}
+
 
 ?>

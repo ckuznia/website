@@ -34,7 +34,12 @@ require_once 'header.php';
                     ?>
                 </div>
                 
-                <div><button id="create-account-button" class="submit-button" type="submit" form="create-account-form">Create Account</button></div>
+                <div><button class="submit-button" type="submit" form="create-account-form">Create Account</button></div>
+                
+                
+            </form>
+            <form action="index.php">
+                <div><button class="cancel-button" type="submit">Cancel</button></div>
             </form>
         </div>
     </div>

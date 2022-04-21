@@ -198,8 +198,44 @@ if($isValid) {
     }
     
     if($data['data']['home_search']['results'] != null && sizeof($data['data']['home_search']['results']) > 0) {
+        
+        function hasValue($data) {
+            return $data != null && $data != "";
+        }
+        
+        // Ensure results have all data populated, if not don't include the result in the list
+        $filteredData;
+        $isValid = false;
+        $index = 0;
+        foreach($data['data']['home_search']['results'] as $result) {
+            // Check all values
+            $isValid = 
+            hasValue($result['property_id']) &&
+            hasValue($result['location']['address']['city']) &&
+            hasValue($result['location']['address']['state_code']) &&
+            hasValue($result['description']['name']) &&
+            hasValue($result['list_price_min']) &&
+            hasValue($result['list_price_max']) &&
+            hasValue($result['description']['sqft_min']) &&
+            hasValue($result['description']['sqft_max']) &&
+            hasValue($result['description']['beds_max']) &&
+            hasValue($result['description']['baths_max']) &&
+            hasValue($result['photos'][0]['href']) &&
+            hasValue($result['href']);
+            
+            // If all values are valid then add to list of results
+            if($isValid) {
+                $filteredData[$index] = $result;
+                $index++;
+            }
+            
+            //$logger->LogDebug(print_r($filteredData[0], true));
+            //$logger->LogDebug(print_r($filteredData[1], true));
+            //$logger->LogDebug(print_r($filteredData[2], true));
+        }
+        
         // Pass on result set
-        $_SESSION['search-results'] = $data['data']['home_search']['results'];
+        $_SESSION['search-results'] = $filteredData;
         
         // Redirect to results page
         header('Location: results.php');

@@ -91,7 +91,7 @@ class Dao {
         $this->logger->LogDebug("getUserInfo() called with username ".$username);
         $conn = $this->getConnection();
         $query = "
-            SELECT first_name, last_name, account_creation_date
+            SELECT first_name, last_name, account_creation_date, username
             FROM user 
             WHERE username = :username";
         $stmt = $conn->prepare($query);
@@ -100,11 +100,16 @@ class Dao {
             $this->logger->LogFatal("Failed to get user info for user $username");
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
         }
-        $row = $stmt->fetchAll();
-        if($row == null || $row == "") {
+        $rows = $stmt->fetchAll();
+        if($rows == null || $rows == "") {
             return null;
         }
-        return $row;
+        
+        foreach($rows as $row) {
+            if($row['username'] == $username) return $row;
+        }
+        
+        return null;
     }
     
     public function verifyAccount($username, $password) {
@@ -118,7 +123,7 @@ class Dao {
     
     public function saveListing($username, $propertyID, $zipCode, $city, $state, $address, $name,
         $listPrice, $size, $beds, $baths, $assignedParking, $yearBuilt, $neighborhood, $propertyType,
-        $cats, $dogs, $nearbySchools, $contactNumber, $leaseTerms, $description, $photos, $main_photo) {
+        $cats, $dogs, $nearbySchools, $contactNumber, $leaseTerms, $description, $photos, $main_photo, $link) {
             
         $this->logger->LogDebug("saveListing() called with username ".$username." and property id ".$propertyID);
         
@@ -128,11 +133,11 @@ class Dao {
             "INSERT INTO listing
             (property_id, username, zip_code, city, state, address, name, list_price, size,
             beds, baths, assigned_parking, year_built, neighborhood, property_type, cats_allowed,
-            dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo)
+            dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo, link)
             VALUES
             (:property_id, :username, :zip_code, :city, :state, :address, :name, :list_price, :size,
             :beds, :baths, :assigned_parking, :year_built, :neighborhood, :property_type, :cats_allowed,
-            :dogs_allowed, :nearby_schools, :contact_number, :lease_terms, :description, :main_photo)";
+            :dogs_allowed, :nearby_schools, :contact_number, :lease_terms, :description, :main_photo, :link)";
         $stmt = $conn->prepare($saveQuery);
         $stmt->bindParam(":property_id", trim($propertyID));
         $stmt->bindParam(":username", $username);
@@ -156,6 +161,7 @@ class Dao {
         $stmt->bindParam(":lease_terms", $leaseTerms);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":main_photo", $main_photo);
+        $stmt->bindParam(":link", $link);
         if(!$stmt->execute()) {
             $this->logger->LogFatal("Failed to add listing with property_id $propertyID");
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
@@ -211,9 +217,8 @@ class Dao {
         $this->logger->LogDebug("getSavedListings() called with username ".$username);
         $conn = $this->getConnection();
         $query = "
-            SELECT property_id, zip_code, city, state, address, name, list_price, size,
-                beds, baths, assigned_parking, year_built, neighborhood, property_type, cats_allowed,
-                dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo
+            SELECT username, search_date, property_id, zip_code, city, state, address, name, list_price, size, beds, baths, assigned_parking, year_built, neighborhood, property_type, cats_allowed,
+                dogs_allowed, nearby_schools, contact_number, lease_terms, description, main_photo, link
             FROM listing 
             WHERE username = :username";
         $stmt = $conn->prepare($query);
@@ -226,25 +231,43 @@ class Dao {
         if($rows == null || $rows == "") {
             return null;
         }
-        return $rows;
+        
+        $filteredResult;
+        $index = 0;
+        foreach($rows as $row) {
+            if($row['username'] == $username) $filteredResult[$index] = $row;
+            $index++;
+        }
+        
+        return $filteredResult;
     }
     
-    public function getPhotos() {
-        $this->logger->LogDebug("getPhotos() called");
+    public function getPhotos($propertyID) {
+        $this->logger->LogDebug("getPhotos() called wiht property id ".$propertyID);
         $conn = $this->getConnection();
         $query = "
             SELECT property_id, house_photo_path
-            FROM listing_photo";
+            FROM listing_photo
+            WHERE property_id = :property_id";
         $stmt = $conn->prepare($query);
+        $stmt->bindValue(":property_id", $propertyID, PDO::PARAM_INT);
         if(!$stmt->execute()) {
-            $this->logger->LogFatal("Failed to get photos");
+            $this->logger->LogFatal("Failed to get photos for property id ".$propertyID);
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
         }
         $rows = $stmt->fetchAll();
         if($rows == null || $rows == "") {
             return null;
         }
-        return $rows;
+        
+        $filteredResult;
+        $index = 0;
+        foreach($rows as $row) {
+            if($row['property_id'] == $propertyID) $filteredResult[$index] = $row;
+            $index++;
+        }
+        
+        return $filteredResult;
     }
     
     public function isSavedListing($propertyID) {
@@ -260,8 +283,17 @@ class Dao {
             $this->logger->LogFatal("Failed to check if property_id $propertyID is saved");
             $this->logger->LogDebug(print_r($stmt->errorInfo(), true));
         }
-        $row = $stmt->fetchAll();
-        if($row == null || $row == "") {
+        $rows = $stmt->fetchAll();
+        
+        
+        $filteredResult;
+        $index = 0;
+        foreach($rows as $row) {
+            if($row['property_id'] == $propertyID) $filteredResult[$index] = $row;
+            $index++;
+        }
+        
+        if($filteredResult == null || $filteredResult == "") {
             return false;
         }
         return true;

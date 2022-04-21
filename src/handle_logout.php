@@ -15,10 +15,6 @@ require_once 'dao.php';
 $dao = new Dao();
 $logger = new KLogger("log.txt", KLogger::DEBUG);
 
-// Delete account
-$username = $_SESSION['username'];
-$dao->deleteUser($username);
-
 // Expire the logged-in cookie
 $username = $_SESSION['username'];
 setcookie("logged-in", $username, time() - (86400)); // Expired a day ago

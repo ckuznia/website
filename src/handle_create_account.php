@@ -24,19 +24,19 @@ $isValid = true;
 
 // Ensure fields are not blank
 if($raw_firstname == "") {
-    $_SESSION['error_message'][] = "First name field must not be blank.";
+    $_SESSION['error_message'][] = "First name must not be blank.";
     $isValid = false;
 }
 if($raw_lastname == "") {
-    $_SESSION['error_message'][] = "Last name field must not be blank.";
+    $_SESSION['error_message'][] = "Last name must not be blank.";
     $isValid = false;
 }
 if($raw_username == "") {
-    $_SESSION['error_message'][] = "Username field must not be blank.";
+    $_SESSION['error_message'][] = "Username must not be blank.";
     $isValid = false;
 }
 if($raw_password == "") {
-    $_SESSION['error_message'][] = "Password field must not be blank.";
+    $_SESSION['error_message'][] = "Password must not be blank.";
     $isValid = false;
 }
 
@@ -52,10 +52,18 @@ if(strlen(trim($raw_password)) < 10) {
     $isValid = false;
 }
 
+// Ensure username is not already taken
+$dao = new Dao();
+if($dao->getUserInfo($username) != null) {
+    $logger->LogDebug(print_r($dao->getUserInfo($username), true));
+    $_SESSION['error_message'][] = "Username already taken.";
+    $isValid = false;
+}
+
 $userAdded = false;
 if($isValid) {
     // Data is valid, proceed to create the account in the database
-    $dao = new Dao();
+    
     $userAdded = $dao->addUser($firstname, $lastname, $username, $password, $email);
     
     // Ensure user was successfully added
